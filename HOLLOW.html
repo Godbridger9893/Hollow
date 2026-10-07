@@ -1,0 +1,990 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>HOLLOW — Adaptive Nova Study Companion</title>
+<style>
+:root{
+  --bg:#050506; --bg2:#0b0b0e; --glass:rgba(255,255,255,.065);
+  --glass2:rgba(255,255,255,.105); --line:rgba(255,255,255,.16);
+  --line2:rgba(255,255,255,.3); --text:#f7f7f8; --muted:#a7a7b0;
+  --soft:#d8d8de; --shadow:0 30px 90px rgba(0,0,0,.55);
+  --blur:22px; --mx:50vw; --my:50vh;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+button,input,select,textarea{font:inherit}
+button{color:inherit}
+::selection{background:rgba(255,255,255,.25)}
+#space{position:fixed;inset:0;width:100%;height:100%;z-index:0;background:radial-gradient(1000px 700px at 50% -12%,rgba(255,255,255,.12),transparent 58%),linear-gradient(180deg,#09090b 0%,#030304 70%)}
+.aurora,.aurora:before,.aurora:after{position:fixed;content:"";pointer-events:none;z-index:1;filter:blur(70px);opacity:.52;border-radius:50%}
+.aurora{width:430px;height:430px;left:-110px;top:-120px;background:rgba(255,255,255,.11);animation:floatA 13s ease-in-out infinite}
+.aurora:before{width:300px;height:300px;left:74vw;top:67vh;background:rgba(205,211,255,.10);animation:floatB 16s ease-in-out infinite}
+.aurora:after{width:230px;height:230px;left:51vw;top:12vh;background:rgba(255,255,255,.07);animation:floatC 11s ease-in-out infinite}
+.cursorGlow{position:fixed;inset:0;pointer-events:none;z-index:2;background:radial-gradient(410px circle at var(--mx) var(--my),rgba(255,255,255,.075),transparent 65%)}
+.shell{position:relative;z-index:5;height:100%;display:grid;grid-template-columns:88px minmax(0,1fr);gap:14px;padding:14px}
+.glass{background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.035) 46%,rgba(255,255,255,.055));border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 20px 60px rgba(0,0,0,.25);backdrop-filter:blur(var(--blur)) saturate(135%);-webkit-backdrop-filter:blur(var(--blur)) saturate(135%)}
+.rail{border-radius:28px;display:flex;flex-direction:column;align-items:center;padding:14px 10px;min-height:0}
+.logo{position:relative;width:54px;height:54px;border-radius:18px;display:grid;place-items:center;font-weight:800;letter-spacing:.08em;background:linear-gradient(145deg,#fff,#bcbcc5);color:#0b0b0d;box-shadow:0 0 35px rgba(255,255,255,.17),inset 0 1px 8px rgba(255,255,255,.8);overflow:hidden}
+.logo:after{content:"";position:absolute;width:80px;height:20px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.92),transparent);transform:rotate(-35deg);animation:shine 4.8s ease-in-out infinite}
+.nav{display:flex;flex-direction:column;gap:9px;margin-top:26px;width:100%}
+.navBtn{border:1px solid transparent;background:transparent;border-radius:18px;width:100%;aspect-ratio:1;display:grid;place-items:center;cursor:pointer;position:relative;transition:.28s ease}
+.navBtn svg{width:21px;height:21px;opacity:.62;transition:.28s}
+.navBtn:hover,.navBtn.active{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.12);transform:translateY(-1px)}
+.navBtn.active svg{opacity:1;filter:drop-shadow(0 0 10px rgba(255,255,255,.42))}
+.navBtn:after{content:attr(data-tip);position:absolute;left:72px;padding:8px 10px;background:#111115;border:1px solid var(--line);border-radius:10px;font-size:12px;color:var(--soft);opacity:0;pointer-events:none;transform:translateX(-6px);transition:.2s;white-space:nowrap}
+.navBtn:hover:after{opacity:1;transform:none}
+.railBottom{margin-top:auto;display:flex;flex-direction:column;gap:9px;width:100%}
+.main{min-width:0;min-height:0;display:flex;flex-direction:column;gap:12px}
+.topbar{height:64px;border-radius:24px;display:flex;align-items:center;padding:0 18px;gap:12px;flex:0 0 auto}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand h1{font-size:15px;letter-spacing:.18em;margin:0;font-weight:750}
+.brand small{font-size:10px;color:var(--muted);letter-spacing:.14em}
+.spacer{flex:1}
+.pill{height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.055);display:flex;align-items:center;gap:8px;font-size:11px;color:var(--soft)}
+.dot{width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 12px #fff}
+.dot.dim{opacity:.35;box-shadow:none}
+.topBtn{height:36px;border-radius:13px;border:1px solid var(--line);background:rgba(255,255,255,.06);padding:0 12px;cursor:pointer;transition:.25s}
+.topBtn:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
+.privateOn{background:rgba(255,255,255,.92)!important;color:#09090b;border-color:#fff!important;box-shadow:0 0 26px rgba(255,255,255,.16)}
+.content{min-height:0;flex:1;display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:12px}
+.stage{min-height:0;border-radius:28px;position:relative;overflow:hidden}
+.side{min-height:0;border-radius:28px;overflow:auto;padding:16px}
+.view{position:absolute;inset:0;display:none;animation:viewIn .42s cubic-bezier(.2,.8,.2,1)}
+.view.active{display:block}
+#studyView.active{display:grid;grid-template-rows:1fr auto}
+.hero{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;opacity:.18;transition:.45s}
+.nova{width:min(46vw,520px);aspect-ratio:1;position:relative;filter:drop-shadow(0 0 40px rgba(255,255,255,.07))}
+.nova .core{position:absolute;inset:34%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0%,#dadbe2 18%,#80818a 42%,rgba(255,255,255,.04) 68%);box-shadow:0 0 60px rgba(255,255,255,.3),0 0 150px rgba(255,255,255,.08);animation:corePulse 3.5s ease-in-out infinite}
+.ring{position:absolute;inset:20%;border:1px solid rgba(255,255,255,.2);border-radius:50%;transform:rotateX(68deg) rotateZ(0);animation:spin 12s linear infinite}
+.ring.r2{inset:11%;transform:rotateY(62deg) rotateZ(25deg);animation-duration:17s;animation-direction:reverse;opacity:.6}
+.ring.r3{inset:2%;transform:rotateX(49deg) rotateY(20deg);animation-duration:23s;opacity:.35}
+.ring:before{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:#fff;top:50%;left:-4px;box-shadow:0 0 14px #fff}
+.chat{position:relative;z-index:2;min-height:0;overflow:auto;padding:30px 28px 120px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
+.welcome{max-width:720px;margin:10vh auto 0;text-align:center}
+.welcome .eyebrow{font-size:11px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+.welcome h2{font-size:clamp(36px,5.3vw,72px);line-height:.96;margin:14px 0 16px;letter-spacing:-.055em;font-weight:680;background:linear-gradient(180deg,#fff,#a9a9b4);-webkit-background-clip:text;color:transparent}
+.welcome p{margin:0 auto;color:#b4b4bd;max-width:560px;line-height:1.65}
+.quick{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:24px}
+.quick button{border:1px solid var(--line);background:rgba(255,255,255,.06);color:#d8d8de;padding:10px 13px;border-radius:14px;cursor:pointer;transition:.25s}
+.quick button:hover{background:rgba(255,255,255,.12);transform:translateY(-2px)}
+.msg{max-width:760px;margin:0 auto 14px;display:flex;gap:11px;align-items:flex-start;animation:msgIn .32s ease}
+.msg .avatar{flex:0 0 30px;height:30px;border-radius:11px;border:1px solid var(--line);display:grid;place-items:center;background:rgba(255,255,255,.06);font-size:11px;font-weight:800}
+.msg.user{flex-direction:row-reverse}
+.bubble{max-width:min(680px,86%);padding:14px 16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.065);border-radius:18px;line-height:1.6;font-size:14px;color:#ededf1;box-shadow:inset 0 1px rgba(255,255,255,.06)}
+.msg.user .bubble{background:rgba(255,255,255,.14)}
+.bubble .meta{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:#8d8d98;margin-bottom:7px}
+.thinking{display:flex;gap:5px;align-items:center;height:14px}
+.thinking i{width:5px;height:5px;border-radius:50%;background:#fff;animation:blink 1.1s infinite}.thinking i:nth-child(2){animation-delay:.16s}.thinking i:nth-child(3){animation-delay:.32s}
+.composerWrap{position:absolute;z-index:5;left:18px;right:18px;bottom:18px}
+.composer{min-height:62px;border-radius:22px;padding:9px 10px 9px 16px;display:flex;align-items:flex-end;gap:9px;background:rgba(15,15,18,.74)}
+textarea{flex:1;resize:none;max-height:130px;min-height:38px;padding:9px 0;background:transparent;border:0;outline:0;color:#fff;line-height:1.45}
+textarea::placeholder{color:#7d7d88}
+.send{width:42px;height:42px;border-radius:15px;border:1px solid rgba(255,255,255,.35);background:linear-gradient(145deg,#fff,#c7c7cf);color:#09090b;cursor:pointer;display:grid;place-items:center;transition:.25s;box-shadow:0 7px 24px rgba(255,255,255,.10)}
+.send:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 9px 30px rgba(255,255,255,.17)}
+.send:disabled{opacity:.4;cursor:default;transform:none}
+.side h3,.panel h3{margin:0 0 4px;font-size:13px;letter-spacing:.02em}
+.sub{font-size:11px;color:var(--muted);line-height:1.5}
+.miniCard{margin-top:13px;padding:13px;border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.035);border-radius:18px}
+.row{display:flex;align-items:center;gap:8px}
+.label{font-size:10px;color:#9696a1;letter-spacing:.12em;text-transform:uppercase}
+.value{font-size:13px;color:#f2f2f5;margin-top:4px}
+.mastery{margin-top:9px}
+.masteryItem{margin-top:10px}
+.masteryTop{display:flex;justify-content:space-between;font-size:11px;color:#c9c9cf}
+.bar{height:5px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-top:6px}
+.bar span{display:block;height:100%;background:linear-gradient(90deg,#787884,#fff);border-radius:99px;box-shadow:0 0 10px rgba(255,255,255,.22);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.modeGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.mode{padding:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.035);border-radius:14px;cursor:pointer;transition:.2s;font-size:11px;color:#c7c7ce}
+.mode:hover,.mode.active{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.24)}
+.mode b{display:block;color:#f5f5f6;font-size:11px;margin-bottom:3px}
+.panel{padding:26px;height:100%;overflow:auto}
+.panelTitle{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px}
+.panelTitle h2{font-size:31px;margin:0;letter-spacing:-.035em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bigCard{border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:22px;padding:18px;min-height:150px}
+.kpi{font-size:38px;letter-spacing:-.05em;margin:15px 0 0}
+.kpi small{font-size:12px;color:var(--muted);letter-spacing:0}
+.settingsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.settingCard{border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:20px;padding:16px}
+.settingCard.full{grid-column:1/-1}
+.field{margin-top:12px}
+.field label{display:block;font-size:10px;color:#9d9da7;text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px}
+input,select{width:100%;height:42px;border-radius:13px;border:1px solid rgba(255,255,255,.13);background:#0d0d10;color:#f5f5f7;padding:0 12px;outline:0}
+input:focus,select:focus{border-color:rgba(255,255,255,.38);box-shadow:0 0 0 3px rgba(255,255,255,.04)}
+.btn{height:42px;border-radius:13px;border:1px solid var(--line);background:rgba(255,255,255,.08);padding:0 14px;cursor:pointer;transition:.2s}
+.btn:hover{background:rgba(255,255,255,.14)}
+.btn.primary{background:#f2f2f4;color:#08080a;border-color:#fff;font-weight:700}
+.btn.danger{border-color:rgba(255,130,130,.25);color:#ffb8b8}
+.status{font-size:11px;margin-top:9px;color:#a7a7b0}
+.status.good{color:#eef5ef}.status.bad{color:#ffb7b7}
+.switch{width:48px;height:28px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.06);position:relative;cursor:pointer;transition:.25s}
+.switch:after{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;border-radius:50%;background:#9c9ca5;transition:.25s}
+.switch.on{background:rgba(255,255,255,.88)}
+.switch.on:after{left:23px;background:#070708}
+.notice{padding:12px 13px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.035);color:#aaaab4;font-size:11px;line-height:1.55}
+.modalBack{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.62);backdrop-filter:blur(16px);display:none;place-items:center;padding:20px}
+.modalBack.show{display:grid}
+.modal{width:min(700px,100%);max-height:92vh;overflow:auto;border-radius:28px;padding:22px;animation:modalIn .35s cubic-bezier(.2,.8,.2,1)}
+.modal h2{font-size:30px;letter-spacing:-.04em;margin:0 0 6px}
+.providerCards{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:18px 0}
+.provider{border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:18px;padding:14px;cursor:pointer;transition:.25s}
+.provider:hover,.provider.active{background:rgba(255,255,255,.12);transform:translateY(-2px);border-color:rgba(255,255,255,.28)}
+.provider b{font-size:12px;display:block}.provider span{font-size:10px;color:#92929c;line-height:1.4;display:block;margin-top:5px}
+.modalActions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.toast{position:fixed;z-index:80;left:50%;bottom:28px;transform:translate(-50%,20px);opacity:0;padding:11px 14px;border-radius:14px;background:rgba(20,20,24,.88);border:1px solid var(--line);backdrop-filter:blur(16px);font-size:11px;color:#dedee3;transition:.3s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.lockScreen{position:fixed;inset:0;z-index:60;background:#050506;display:none;place-items:center}
+.lockScreen.show{display:grid}
+.lockInner{text-align:center}
+.lockOrb{width:94px;height:94px;margin:0 auto 22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#999aa3 28%,#19191e 60%);box-shadow:0 0 70px rgba(255,255,255,.16);animation:corePulse 3s ease-in-out infinite}
+body.private .aurora{opacity:.18}
+body.private .stage,body.private .side,body.private .topbar,body.private .rail{border-color:rgba(255,255,255,.25)}
+body.private .hero{opacity:.27}
+@keyframes shine{0%,65%{transform:translateX(-100px) rotate(-35deg)}85%,100%{transform:translateX(100px) rotate(-35deg)}}
+@keyframes floatA{50%{transform:translate(90px,55px) scale(1.12)}}
+@keyframes floatB{50%{transform:translate(-120px,-90px) scale(.88)}}
+@keyframes floatC{50%{transform:translate(70px,130px)}}
+@keyframes spin{to{transform:rotateX(68deg) rotateZ(360deg)}}
+@keyframes corePulse{50%{transform:scale(1.08);filter:brightness(1.18)}}
+@keyframes blink{0%,80%,100%{opacity:.25;transform:scale(.75)}40%{opacity:1;transform:scale(1)}}
+@keyframes msgIn{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
+@keyframes viewIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+
+.onboardBack{position:fixed;inset:0;z-index:70;display:none;place-items:center;padding:24px;background:
+radial-gradient(900px 620px at 50% 30%,rgba(255,255,255,.10),transparent 65%),
+rgba(3,3,5,.82);backdrop-filter:blur(28px) saturate(125%)}
+.onboardBack.show{display:grid}
+.onboardShell{width:min(920px,100%);min-height:560px;border-radius:36px;overflow:hidden;position:relative;padding:1px;
+background:linear-gradient(135deg,rgba(255,255,255,.32),rgba(255,255,255,.08) 35%,rgba(255,255,255,.18) 70%,rgba(255,255,255,.04));
+box-shadow:0 50px 140px rgba(0,0,0,.65),0 0 90px rgba(255,255,255,.06)}
+.onboardInner{position:relative;min-height:558px;border-radius:35px;background:linear-gradient(155deg,rgba(19,19,23,.92),rgba(8,8,11,.90));overflow:hidden}
+.onboardGlow{position:absolute;width:520px;height:520px;border-radius:50%;left:50%;top:-320px;transform:translateX(-50%);
+background:radial-gradient(circle,rgba(255,255,255,.28),rgba(255,255,255,.07) 35%,transparent 70%);filter:blur(16px);animation:onGlow 6s ease-in-out infinite}
+.onboardOrbit{position:absolute;width:430px;height:430px;border:1px solid rgba(255,255,255,.10);border-radius:50%;left:50%;top:-260px;transform:translateX(-50%) rotateX(67deg);animation:onSpin 18s linear infinite}
+.onboardOrbit:before,.onboardOrbit:after{content:"";position:absolute;border-radius:50%;background:#fff;box-shadow:0 0 18px rgba(255,255,255,.9)}
+.onboardOrbit:before{width:7px;height:7px;left:-4px;top:50%}.onboardOrbit:after{width:4px;height:4px;right:16%;top:7%}
+.onboardContent{position:relative;z-index:2;display:grid;grid-template-columns:240px minmax(0,1fr);min-height:558px}
+.onboardAside{padding:32px 26px;border-right:1px solid rgba(255,255,255,.10);background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018))}
+.onboardMark{width:58px;height:58px;border-radius:19px;background:linear-gradient(145deg,#fff,#b9bac2);color:#08080a;display:grid;place-items:center;font-weight:900;font-size:20px;box-shadow:0 0 35px rgba(255,255,255,.13)}
+.onboardAside h3{font-size:20px;margin:20px 0 8px;letter-spacing:-.02em}.onboardAside p{font-size:12px;line-height:1.65;color:#9797a2}
+.onSteps{margin-top:28px;display:grid;gap:10px}.onStepDot{height:7px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.onStepDot span{display:block;height:100%;width:0;background:linear-gradient(90deg,#898993,#fff);box-shadow:0 0 12px rgba(255,255,255,.4);transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.onStepDot.done span{width:100%}.onStepDot.active span{width:45%}
+.onboardMain{padding:44px 42px 32px;display:flex;flex-direction:column;min-width:0}
+.onQ{display:none;animation:onQ .42s cubic-bezier(.2,.8,.2,1)}.onQ.active{display:block}
+.onKicker{font-size:10px;letter-spacing:.18em;color:#8f8f9a;text-transform:uppercase}.onQ h2{font-size:clamp(31px,4vw,48px);line-height:1.02;letter-spacing:-.05em;margin:12px 0 12px}
+.onQ p{font-size:13px;color:#aaaab4;line-height:1.65;max-width:620px}
+.onInput{width:100%;height:58px!important;border-radius:18px!important;font-size:16px;padding:0 16px!important;background:rgba(255,255,255,.055)!important;margin-top:18px}
+.choiceGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:18px}
+.choice{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);border-radius:18px;padding:15px;text-align:left;cursor:pointer;transition:.24s}
+.choice:hover{transform:translateY(-2px);background:rgba(255,255,255,.09)}.choice.active{background:rgba(255,255,255,.92);color:#08080a;border-color:#fff;box-shadow:0 0 28px rgba(255,255,255,.11)}
+.choice b{display:block;font-size:12px}.choice small{display:block;font-size:10px;opacity:.6;margin-top:4px;line-height:1.4}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.chip{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);padding:10px 12px;border-radius:999px;font-size:11px;cursor:pointer;transition:.2s}
+.chip.active{background:#f0f0f2;color:#08080a;border-color:#fff}.onboardFoot{margin-top:auto;display:flex;align-items:center;gap:8px;padding-top:22px}.onboardFoot .spacer{flex:1}
+.onboardHint{font-size:10px;color:#777781}
+.personalTag{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);font-size:10px;color:#b7b7c0;margin-top:14px}
+.companionPulse{animation:compPulse 3.2s ease-in-out infinite}
+.welcome h2{background-size:100% 220%;animation:titleSheen 7s ease-in-out infinite}
+.stage:before{content:"";position:absolute;inset:-40%;pointer-events:none;background:conic-gradient(from 0deg,transparent 0 72%,rgba(255,255,255,.025) 80%,transparent 87%);animation:stageSweep 18s linear infinite;z-index:0}
+@keyframes onGlow{50%{transform:translateX(-50%) scale(1.12);opacity:.75}}
+@keyframes onSpin{to{transform:translateX(-50%) rotateX(67deg) rotateZ(360deg)}}
+@keyframes onQ{from{opacity:0;transform:translateY(12px) scale(.992)}to{opacity:1;transform:none}}
+@keyframes compPulse{50%{box-shadow:0 0 30px rgba(255,255,255,.18),inset 0 1px 8px rgba(255,255,255,.8)}}
+@keyframes titleSheen{0%,100%{filter:brightness(.92)}50%{filter:brightness(1.13)}}
+@keyframes stageSweep{to{transform:rotate(360deg)}}
+
+
+.providerHub{width:min(1060px,100%);max-height:94vh;overflow:hidden;border-radius:30px;padding:0}
+.providerHubHead{padding:20px 22px 14px;border-bottom:1px solid rgba(255,255,255,.09);background:linear-gradient(180deg,rgba(255,255,255,.045),transparent)}
+.providerHubTitle{display:flex;align-items:center;gap:12px}.providerHubTitle h2{font-size:27px;margin:0;letter-spacing:-.04em}.providerHubTitle .count{font-size:9px;letter-spacing:.12em;padding:6px 8px;border:1px solid var(--line);border-radius:999px;color:#aaaab4}
+.hubToolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-top:14px}
+.hubSearch{height:44px!important;background:rgba(255,255,255,.055)!important;border-radius:14px!important}
+.hubFilters{display:flex;gap:6px;flex-wrap:wrap}.hubFilter{height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);padding:0 11px;color:#aaaab3;font-size:10px;cursor:pointer}
+.hubFilter.active{background:#f2f2f4;color:#08080a;border-color:#fff}
+.providerHubBody{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(330px,.75fr);height:min(650px,72vh)}
+.providerList{padding:14px;overflow:auto;border-right:1px solid rgba(255,255,255,.09)}
+.providerGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.pCard{position:relative;border:1px solid rgba(255,255,255,.1);background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.025));border-radius:18px;padding:14px;cursor:pointer;transition:.22s;min-height:116px;overflow:hidden}
+.pCard:before{content:"";position:absolute;inset:-70% 30% auto -20%;height:120px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);transform:rotate(-25deg);transition:.45s}
+.pCard:hover{transform:translateY(-2px);background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.22)}.pCard:hover:before{transform:translateX(160%) rotate(-25deg)}
+.pCard.active{background:linear-gradient(145deg,rgba(255,255,255,.15),rgba(255,255,255,.06));border-color:rgba(255,255,255,.35);box-shadow:0 0 30px rgba(255,255,255,.05)}
+.pCardTop{display:flex;align-items:center;gap:10px}.pIcon{width:38px;height:38px;border-radius:13px;background:linear-gradient(145deg,#f3f3f5,#8d8e98);color:#09090b;display:grid;place-items:center;font-size:12px;font-weight:900;box-shadow:inset 0 1px rgba(255,255,255,.7)}
+.pCard h4{font-size:12px;margin:0}.pCard p{font-size:10px;color:#93939e;line-height:1.45;margin:8px 0 0}
+.badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.badge{font-size:8px;letter-spacing:.08em;text-transform:uppercase;padding:4px 6px;border-radius:999px;border:1px solid rgba(255,255,255,.11);color:#aaaab3}.badge.free{color:#edf7ef;border-color:rgba(215,255,220,.18)}.badge.local{color:#fff;border-color:rgba(255,255,255,.25)}
+.providerDetail{padding:20px;overflow:auto;background:linear-gradient(180deg,rgba(255,255,255,.025),transparent)}
+.pDetailHero{display:flex;gap:12px;align-items:center}.pDetailHero .pIcon{width:48px;height:48px;border-radius:16px}
+.pDetailHero h3{font-size:17px;margin:0}.pDetailHero p{font-size:10px;color:#91919b;margin:3px 0 0}
+.detailSection{margin-top:18px}.detailSection h4{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#8e8e98;margin:0 0 8px}
+.tutorialSteps{display:grid;gap:7px;counter-reset:steps}.tutorialStep{position:relative;padding:10px 10px 10px 36px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.025);border-radius:13px;font-size:10px;line-height:1.5;color:#b3b3bc;counter-increment:steps}
+.tutorialStep:before{content:counter(steps);position:absolute;left:10px;top:9px;width:18px;height:18px;border-radius:7px;background:rgba(255,255,255,.1);display:grid;place-items:center;color:#fff;font-size:9px}
+.detailActions{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}.detailActions a{text-decoration:none;display:inline-flex;align-items:center}
+.savedConnections{display:grid;gap:7px;margin-top:8px}.connectionRow{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.025);border-radius:13px}
+.connectionRow.active{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08)}.connectionRow .grow{flex:1;min-width:0}.connectionRow b{font-size:10px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.connectionRow small{font-size:8px;color:#898993}
+.microBtn{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);height:28px;padding:0 8px;border-radius:9px;color:#aaaab3;font-size:9px;cursor:pointer}
+.connectForm{display:grid;gap:8px;margin-top:10px}.connectForm input,.connectForm select{height:40px}.connectForm .field{margin:0}
+.hubEmpty{grid-column:1/-1;padding:40px;text-align:center;color:#85858f;font-size:11px}
+.hubFoot{padding:10px 14px;border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:8px;font-size:9px;color:#777781}
+.capacity{height:5px;width:100px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}.capacity span{display:block;height:100%;background:#fff;min-width:2px}
+@media(max-width:850px){.providerHubBody{grid-template-columns:1fr;height:74vh}.providerDetail{display:none}.providerList{border-right:0}.providerGrid{grid-template-columns:1fr}.hubToolbar{grid-template-columns:1fr}.providerHub{max-height:96vh}}
+
+@media (max-width:980px){.content{grid-template-columns:1fr}.side{display:none}.shell{grid-template-columns:72px 1fr}.grid2,.settingsGrid{grid-template-columns:1fr}.settingCard.full{grid-column:auto}}
+@media (max-width:760px){.onboardContent{grid-template-columns:1fr}.onboardAside{display:none}.onboardMain{padding:32px 22px}.choiceGrid{grid-template-columns:1fr}.onboardShell,.onboardInner{min-height:620px}}
+@media (max-width:640px){.shell{padding:8px;gap:8px;grid-template-columns:1fr}.rail{display:none}.topbar{border-radius:18px;height:58px}.brand small,.providerPill{display:none}.stage{border-radius:20px}.content{gap:8px}.chat{padding:20px 14px 110px}.composerWrap{left:10px;right:10px;bottom:10px}.providerCards{grid-template-columns:1fr}.panel{padding:18px}.welcome{margin-top:8vh}}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<canvas id="space"></canvas><div class="aurora"></div><div class="cursorGlow"></div>
+<div class="shell">
+  <aside class="rail glass">
+    <div class="logo">H</div>
+    <div class="nav">
+      <button class="navBtn active" data-view="studyView" data-tip="Study" aria-label="Study"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5V5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2.5"/><path d="M8 7h6M8 11h8"/></svg></button>
+      <button class="navBtn" data-view="progressView" data-tip="Progress" aria-label="Progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg></button>
+      <button class="navBtn" data-view="vaultView" data-tip="Vault" aria-label="Vault"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M8 5V3h8v2M8 11h8M12 11v4"/></svg></button>
+      <button class="navBtn" data-view="settingsView" data-tip="Settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.6v-.1A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3V9.6h.1A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.1A1.7 1.7 0 0 0 15.4 4a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.34.28.54.68.6 1.1v3.8c-.06.42-.26.82-.6 1.1Z"/></svg></button>
+    </div>
+    <div class="railBottom">
+      <button class="navBtn" id="lockBtn" data-tip="Lock HOLLOW" aria-label="Lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></button>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar glass">
+      <div class="brand"><div><h1>HOLLOW</h1><small>NOVA STUDY INTELLIGENCE</small></div></div>
+      <div class="spacer"></div>
+      <div class="pill providerPill"><span class="dot" id="providerDot"></span><span id="providerLabel">SETUP</span></div>
+      <button class="topBtn" id="privateBtn">PRIVATE</button>
+      <button class="topBtn" id="setupBtn">AI</button>
+    </header>
+    <div class="content">
+      <section class="stage glass">
+        <div class="hero"><div class="nova"><div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div><div class="core"></div></div></div>
+        <div class="view active" id="studyView">
+          <div class="chat" id="chat">
+            <div class="welcome" id="welcome">
+              <div class="eyebrow">Think deeper. Learn faster.</div>
+              <h2>Don't get the answer.<br>Become able to find it.</h2>
+              <p>HOLLOW is built to guide, question, test, and adapt — not dump homework answers. Your learning profile can stay entirely on this device.</p>
+              <div class="quick">
+                <button data-prompt="Teach me a difficult concept step by step without giving me the final answer.">Teach me</button>
+                <button data-prompt="Quiz me on a topic I choose and adapt the difficulty as I answer.">Quiz me</button>
+                <button data-prompt="I am stuck on a problem. Give me only the smallest useful hint.">Give a hint</button>
+                <button data-prompt="Challenge my understanding and find the first gap in what I know.">Challenge me</button>
+              </div>
+            </div>
+          </div>
+          <div class="composerWrap">
+            <div class="composer glass">
+              <textarea id="prompt" rows="1" placeholder="Ask HOLLOW anything you're learning…"></textarea>
+              <button class="send" id="send" aria-label="Send"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m5 12 14-7-7 14-1.5-5.5L5 12Z"/><path d="m10.5 13.5 3-3"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" id="progressView">
+          <div class="panel">
+            <div class="panelTitle"><div><div class="label">Adaptive profile</div><h2>Your learning map</h2></div><button class="btn" id="exportBtn">Export profile</button></div>
+            <div class="grid2">
+              <div class="bigCard"><div class="label">Mastery average</div><div class="kpi" id="avgMastery">—</div><div class="sub">Built from your feedback and study sessions.</div></div>
+              <div class="bigCard"><div class="label">Study signals</div><div class="kpi" id="signalCount">0 <small>signals</small></div><div class="sub">Small, local updates — no giant model retraining.</div></div>
+              <div class="bigCard" style="grid-column:1/-1"><div class="label">Topics</div><div id="progressTopics" class="mastery"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" id="vaultView">
+          <div class="panel">
+            <div class="panelTitle"><div><div class="label">Local knowledge</div><h2>Study Vault</h2></div></div>
+            <div class="grid2">
+              <div class="bigCard"><h3>Quick notes</h3><div class="sub">Paste notes here. HOLLOW can include them in your next study request without uploading them anywhere unless you choose a cloud model.</div><textarea id="notes" style="width:100%;margin-top:12px;min-height:160px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.25);padding:12px"></textarea><button class="btn" id="saveNotes" style="margin-top:10px">Save locally</button></div>
+              <div class="bigCard"><h3>Privacy state</h3><div class="sub" id="privacyCopy" style="margin-top:8px">Normal mode. Local learning data is saved on this device.</div><div class="notice" style="margin-top:14px">Private Mode blocks cloud AI, pauses learning-profile writes, and clears the private chat when you exit it.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="view" id="settingsView">
+          <div class="panel">
+            <div class="panelTitle"><div><div class="label">Control center</div><h2>Settings</h2></div></div>
+            <div class="settingsGrid">
+              <div class="settingCard"><div class="row"><div><h3>Adaptive learning</h3><div class="sub">Remember mastery, mistakes, and preferences locally.</div></div><div class="spacer"></div><div class="switch on" id="learningSwitch"></div></div></div>
+              <div class="settingCard"><div class="row"><div><h3>Answer Guard</h3><div class="sub">Block obvious answer-dumping patterns.</div></div><div class="spacer"></div><div class="switch on" id="guardSwitch"></div></div></div>
+              <div class="settingCard full"><h3>Data controls</h3><div class="sub">Your profile and notes are stored in this browser. API keys use an encrypted browser vault when supported.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn" id="openSetup2">AI setup</button><button class="btn" id="downloadData">Export all data</button><button class="btn danger" id="resetData">Reset HOLLOW</button></div></div>
+              <div class="settingCard full"><div class="notice"><b>Single-file security note:</b> a browser HTML file cannot protect API keys as strongly as a native app using macOS Keychain or Windows Credential Manager. HOLLOW encrypts saved keys at rest with a non-exportable Web Crypto key in IndexedDB when the browser allows it; if secure persistence is unavailable, the key is kept only for the current session.</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side glass">
+        <div class="label">Session</div><h3 style="margin-top:5px">Tutor control</h3><div class="sub">HOLLOW changes how it teaches without changing the base model itself.</div>
+        <div class="miniCard">
+          <div class="label">Mode</div>
+          <div class="modeGrid">
+            <div class="mode active" data-mode="Socratic"><b>Socratic</b>Questions first</div>
+            <div class="mode" data-mode="Hint"><b>Hint</b>Smallest nudge</div>
+            <div class="mode" data-mode="Teach"><b>Teach</b>Build concept</div>
+            <div class="mode" data-mode="Challenge"><b>Challenge</b>Find weak spots</div>
+          </div>
+        </div>
+        <div class="miniCard">
+          <div class="label">Learner pulse</div>
+          <div id="sideMastery" class="mastery"></div>
+          <button class="btn" id="gotItBtn" style="width:100%;margin-top:12px">I got it ↑</button>
+          <button class="btn" id="stuckBtn" style="width:100%;margin-top:7px">Still stuck ↓</button>
+        </div>
+        <div class="miniCard">
+          <div class="row"><span class="dot" id="privacyDot"></span><div><div class="value" id="privacyTitle" style="margin:0">LOCAL MEMORY ON</div><div class="sub" id="privacySub">Profile saves on this device.</div></div></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+
+<div class="onboardBack" id="onboarding">
+  <div class="onboardShell">
+    <div class="onboardInner">
+      <div class="onboardGlow"></div><div class="onboardOrbit"></div>
+      <div class="onboardContent">
+        <aside class="onboardAside">
+          <div class="onboardMark companionPulse">H</div>
+          <h3>Meet your study companion.</h3>
+          <p>HOLLOW works best when it understands how you think, how hard you want to be pushed, and what kind of explanations actually click for you.</p>
+          <div class="onSteps" id="onSteps"></div>
+          <div class="personalTag">LOCAL PROFILE • YOUR DEVICE</div>
+        </aside>
+        <section class="onboardMain">
+          <div id="onQuestions">
+            <div class="onQ active" data-step="0">
+              <div class="onKicker">01 • Introductions</div>
+              <h2>What should I call you?</h2>
+              <p>This is only for your local HOLLOW profile. Use your real name, nickname, gamer tag — whatever feels natural.</p>
+              <input class="onInput" id="obName" maxlength="40" placeholder="e.g. Jason">
+            </div>
+            <div class="onQ" data-step="1">
+              <div class="onKicker">02 • Companion</div>
+              <h2>What should you call me?</h2>
+              <p>Keep <b>HOLLOW</b>, or give your study companion its own name.</p>
+              <input class="onInput" id="obCompanion" maxlength="40" value="HOLLOW" placeholder="HOLLOW">
+            </div>
+            <div class="onQ" data-step="2">
+              <div class="onKicker">03 • Personality</div>
+              <h2>What vibe should I have?</h2>
+              <p>This changes how your companion talks to you — not the quality of the teaching.</p>
+              <div class="choiceGrid" id="personalityChoices">
+                <button class="choice active" data-value="Chill"><b>Chill</b><small>Relaxed, natural, zero classroom stiffness.</small></button>
+                <button class="choice" data-value="Focused"><b>Focused</b><small>Direct, efficient, almost no filler.</small></button>
+                <button class="choice" data-value="Energetic"><b>Energetic</b><small>More momentum, excitement, and challenge.</small></button>
+                <button class="choice" data-value="Calm"><b>Calm</b><small>Patient, steady, low-pressure explanations.</small></button>
+              </div>
+            </div>
+            <div class="onQ" data-step="3">
+              <div class="onKicker">04 • Learning style</div>
+              <h2>How do things click for you?</h2>
+              <div class="choiceGrid" id="styleChoices">
+                <button class="choice active" data-value="Questions"><b>Questions first</b><small>Guide me until I discover it myself.</small></button>
+                <button class="choice" data-value="Examples"><b>Examples first</b><small>Show a tiny example, then let me try.</small></button>
+                <button class="choice" data-value="Simple"><b>Simple first</b><small>Plain language before technical detail.</small></button>
+                <button class="choice" data-value="Mixed"><b>Adaptive mix</b><small>Figure out what works as we study.</small></button>
+              </div>
+            </div>
+            <div class="onQ" data-step="4">
+              <div class="onKicker">05 • Pressure</div>
+              <h2>How hard should I push you?</h2>
+              <div class="choiceGrid" id="challengeChoices">
+                <button class="choice" data-value="Gentle"><b>Gentle</b><small>More hints and confidence-building.</small></button>
+                <button class="choice active" data-value="Balanced"><b>Balanced</b><small>Help when needed, challenge when useful.</small></button>
+                <button class="choice" data-value="Hard"><b>Push me</b><small>Make me prove I understand it.</small></button>
+                <button class="choice" data-value="Exam"><b>Exam mode</b><small>Minimal help. Strong checking and recall.</small></button>
+              </div>
+            </div>
+            <div class="onQ" data-step="5">
+              <div class="onKicker">06 • Subjects</div>
+              <h2>What are we getting good at?</h2>
+              <p>Pick as many as you want. HOLLOW will still learn new subjects later.</p>
+              <div class="chips" id="subjectChoices">
+                <button class="chip" data-value="Math">Math</button><button class="chip" data-value="Physics">Physics</button>
+                <button class="chip" data-value="Chemistry">Chemistry</button><button class="chip" data-value="Biology">Biology</button>
+                <button class="chip" data-value="English">English</button><button class="chip" data-value="History">History</button>
+                <button class="chip" data-value="Coding">Coding</button><button class="chip" data-value="Other">Other</button>
+              </div>
+            </div>
+            <div class="onQ" data-step="6">
+              <div class="onKicker">07 • Goal</div>
+              <h2>What do you want from us?</h2>
+              <p>A test, better grades, genuinely understanding school, becoming amazing at one subject — anything.</p>
+              <input class="onInput" id="obGoal" maxlength="180" placeholder="e.g. Understand maths properly and stop forgetting it">
+            </div>
+            <div class="onQ" data-step="7">
+              <div class="onKicker">Ready</div>
+              <h2>Perfect. I’ll learn how you learn.</h2>
+              <p>Your profile stays local. HOLLOW will adjust explanations, challenge level, pacing, and revision based on your choices and the study signals you give it over time.</p>
+              <div class="notice" style="margin-top:18px">HOLLOW adapts its <b>student model and tutoring strategy</b>. It does not silently retrain or rewrite the underlying AI model.</div>
+            </div>
+          </div>
+          <div class="onboardFoot">
+            <span class="onboardHint" id="onboardHint">Takes about 30 seconds.</span><div class="spacer"></div>
+            <button class="btn" id="obBack" style="display:none">Back</button>
+            <button class="btn primary" id="obNext">Next</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modalBack" id="setupModal">
+  <div class="providerHub glass">
+    <div class="providerHubHead">
+      <div class="providerHubTitle">
+        <div class="logo" style="width:42px;height:42px;border-radius:14px">AI</div>
+        <div><h2>HOLLOW Provider Hub</h2><div class="sub">Local-first. Save up to 300 provider connections on this device.</div></div>
+        <div class="spacer"></div><span class="count" id="providerCatalogCount">CATALOG</span>
+        <button class="microBtn" id="closeSetup">✕</button>
+      </div>
+      <div class="hubToolbar">
+        <input class="hubSearch" id="providerSearch" placeholder="Search local, free, paid, gateway…">
+        <div class="hubFilters">
+          <button class="hubFilter active" data-pfilter="all">ALL</button>
+          <button class="hubFilter" data-pfilter="local">LOCAL</button>
+          <button class="hubFilter" data-pfilter="free">FREE</button>
+          <button class="hubFilter" data-pfilter="paid">PAID</button>
+          <button class="hubFilter" data-pfilter="gateway">GATEWAYS</button>
+        </div>
+      </div>
+    </div>
+    <div class="providerHubBody">
+      <div class="providerList"><div class="providerGrid" id="providerGrid"></div></div>
+      <aside class="providerDetail" id="providerDetail"></aside>
+    </div>
+    <div class="hubFoot">
+      <span id="connectionCapacity">0 / 300 CONNECTIONS</span>
+      <div class="capacity"><span id="capacityBar" style="width:1%"></span></div>
+      <span>• keys stay in HOLLOW's local encrypted vault when supported</span>
+      <div class="spacer"></div><button class="microBtn" id="customProviderBtn">+ CUSTOM</button>
+    </div>
+  </div>
+</div>
+
+<div class="lockScreen" id="lockScreen"><div class="lockInner"><div class="lockOrb"></div><div class="label">HOLLOW LOCKED</div><h2 style="font-size:28px;margin:10px 0 8px">Your study space is hidden.</h2><button class="btn primary" id="unlockBtn">Unlock</button></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+"use strict";
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const DEFAULTS = {
+  provider:null, model:"gemini-3.6-flash", ollamaUrl:"http://localhost:11434",
+  openaiUrl:"", mode:"Socratic", adaptive:true, guard:true, private:false
+};
+let settings = {...DEFAULTS, ...safeJSON(localStorage.getItem("hollow_settings"),{})};
+let profile = safeJSON(localStorage.getItem("hollow_profile"), {
+  onboarded:false, name:"", companionName:"HOLLOW", personality:"Chill",
+  learningStyle:"Questions", challenge:"Balanced", subjects:[], goal:"",
+  topics:{General:55}, signals:0, preferred:"questions-first",
+  adaptation:{simplify:0, examples:0, challenge:0, patience:0}
+});
+let chatHistory = [];
+let prePrivateProfile = null;
+let sessionSecrets = {};
+let busy = false;
+let selectedProvider = settings.provider || "ollama";
+let providerFilter="all";
+let selectedPresetId=settings.provider||"ollama";
+let savedConnections=safeJSON(localStorage.getItem("hollow_connections"),[]);
+let activeConnectionId=localStorage.getItem("hollow_active_connection")||"";
+let currentTopic = "General";
+
+function safeJSON(x,f){try{return x?JSON.parse(x):f}catch{return f}}
+function persist(){
+  const copy={...settings}; delete copy.private;
+  localStorage.setItem("hollow_settings",JSON.stringify(copy));
+  if(settings.adaptive && !settings.private) localStorage.setItem("hollow_profile",JSON.stringify(profile));
+}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove("show"),2200)}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function fmt(s){return escapeHtml(s).replace(/\*\*(.*?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>")}
+function now(){return new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
+
+const Vault = {
+  db:null,
+  async open(){
+    if(!("indexedDB" in window) || !crypto?.subtle) throw new Error("Secure browser vault unavailable");
+    if(this.db) return this.db;
+    this.db=await new Promise((res,rej)=>{
+      const r=indexedDB.open("HOLLOW_VAULT",1);
+      r.onupgradeneeded=()=>r.result.createObjectStore("vault");
+      r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);
+    });
+    return this.db;
+  },
+  async getRaw(k){
+    const db=await this.open();
+    return new Promise((res,rej)=>{const r=db.transaction("vault","readonly").objectStore("vault").get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+  },
+  async putRaw(k,v){
+    const db=await this.open();
+    return new Promise((res,rej)=>{const r=db.transaction("vault","readwrite").objectStore("vault").put(v,k);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)});
+  },
+  async key(){
+    let k=await this.getRaw("deviceKey");
+    if(k) return k;
+    k=await crypto.subtle.generateKey({name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
+    await this.putRaw("deviceKey",k); return k;
+  },
+  async save(name,value){
+    const key=await this.key(), iv=crypto.getRandomValues(new Uint8Array(12));
+    const bytes=new TextEncoder().encode(value);
+    const cipher=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,bytes);
+    await this.putRaw("secret:"+name,{iv:[...iv],cipher:[...new Uint8Array(cipher)]});
+  },
+  async load(name){
+    try{
+      const rec=await this.getRaw("secret:"+name); if(!rec)return "";
+      const key=await this.key();
+      const plain=await crypto.subtle.decrypt({name:"AES-GCM",iv:new Uint8Array(rec.iv)},key,new Uint8Array(rec.cipher));
+      return new TextDecoder().decode(plain);
+    }catch{return ""}
+  },
+  async clear(){
+    if(!("indexedDB" in window)) return;
+    if(this.db){this.db.close();this.db=null}
+    indexedDB.deleteDatabase("HOLLOW_VAULT");
+  }
+};
+
+async function getSecret(name){return sessionSecrets[name] || await Vault.load(name)}
+async function setSecret(name,val,remember){
+  sessionSecrets[name]=val;
+  if(remember && val){try{await Vault.save(name,val);return true}catch{return false}}
+  return true;
+}
+
+
+const PROVIDER_PRESETS=[
+{id:"ollama",name:"Ollama",icon:"OL",kind:"ollama",tags:["local","free"],price:"Free • local",base:"http://localhost:11434",model:"qwen3:4b",docs:"https://ollama.com/download",desc:"Private local models. Best HOLLOW default.",steps:["Install Ollama from the official site.","Download a model, for example: ollama pull qwen3:4b","Keep the default local address unless you changed it.","Enter the model name and connect."]},
+{id:"lmstudio",name:"LM Studio",icon:"LM",kind:"openai",tags:["local","free"],price:"Free • local",base:"http://localhost:1234/v1",model:"local-model",docs:"https://lmstudio.ai/docs/app/api/endpoints/openai",desc:"Local desktop models through an OpenAI-compatible server.",steps:["Install LM Studio and load a model.","Start its Local Server / Developer server.","Use the displayed v1 base URL.","Enter the loaded model ID and connect."]},
+{id:"localai",name:"LocalAI",icon:"LA",kind:"openai",tags:["local","free"],price:"Free • self-hosted",base:"http://localhost:8080/v1",model:"gpt-4",docs:"https://localai.io/basics/getting_started/",desc:"Self-hosted OpenAI-compatible local AI.",steps:["Install and start LocalAI.","Configure a local model.","Use the LocalAI /v1 address.","Enter its model alias and connect."]},
+{id:"vllm",name:"vLLM Server",icon:"VL",kind:"openai",tags:["local","free"],price:"Free • self-hosted",base:"http://localhost:8000/v1",model:"",docs:"https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html",desc:"High-performance OpenAI-compatible local/server inference.",steps:["Start vLLM's OpenAI-compatible server.","Copy its /v1 base URL.","Enter the served model name.","Connect."]},
+{id:"llamacpp",name:"llama.cpp Server",icon:"L+",kind:"openai",tags:["local","free"],price:"Free • local",base:"http://localhost:8080/v1",model:"local-model",docs:"https://github.com/ggml-org/llama.cpp",desc:"Tiny local GGUF server with OpenAI-compatible mode.",steps:["Install llama.cpp and choose a GGUF model.","Start llama-server.","Use its local /v1 address.","Enter the model alias and connect."]},
+{id:"gemini",name:"Google Gemini",icon:"G",kind:"gemini",tags:["free","paid"],price:"Free tier + paid",base:"",model:"gemini-3.6-flash",docs:"https://ai.google.dev/gemini-api/docs",desc:"Simple cloud connection with Google Gemini.",steps:["Open Google AI Studio / Gemini API docs.","Create an API key.","Paste it into HOLLOW.","Choose a Gemini model and connect."]},
+{id:"openai",name:"OpenAI",icon:"OA",kind:"openai",tags:["paid"],price:"Paid API",base:"https://api.openai.com/v1",model:"gpt-5.5",docs:"https://platform.openai.com/docs/quickstart",desc:"OpenAI API through a standard compatible chat endpoint.",steps:["Create an API key in the OpenAI developer platform.","Paste it into HOLLOW.","Keep the official /v1 base URL unless using a gateway.","Choose an available model and connect."]},
+{id:"anthropic",name:"Anthropic",icon:"A",kind:"anthropic",tags:["paid"],price:"Paid API",base:"https://api.anthropic.com",model:"claude-sonnet-4-5",docs:"https://docs.anthropic.com/en/api/getting-started",desc:"Claude through Anthropic's Messages API.",steps:["Create an Anthropic Console API key.","Paste it into HOLLOW.","Choose a Claude model available to you.","Connect. If file:// browser CORS blocks it, use a gateway instead."]},
+{id:"openrouter",name:"OpenRouter",icon:"OR",kind:"openai",tags:["free","paid","gateway"],price:"Free models + paid",base:"https://openrouter.ai/api/v1",model:"openrouter/auto",docs:"https://openrouter.ai/docs/quickstart",desc:"One gateway to a very large multi-provider model catalog.",steps:["Create an OpenRouter API key.","Paste it into HOLLOW.","Choose an OpenRouter model slug or routing option.","Connect. Great when direct browser APIs are blocked."]},
+{id:"groq",name:"Groq",icon:"GQ",kind:"openai",tags:["free","paid"],price:"Free tier + paid",base:"https://api.groq.com/openai/v1",model:"llama-3.3-70b-versatile",docs:"https://console.groq.com/docs/api-reference",desc:"Very fast OpenAI-compatible inference.",steps:["Create a GroqCloud API key.","Paste it into HOLLOW.","Keep the Groq OpenAI-compatible base URL.","Pick a model from Groq and connect."]},
+{id:"mistral",name:"Mistral AI",icon:"MI",kind:"openai",tags:["free","paid"],price:"Free mode + paid",base:"https://api.mistral.ai/v1",model:"mistral-small-latest",docs:"https://docs.mistral.ai/getting-started/quickstarts/developer/first-api-request",desc:"Official Mistral API with OpenAI-style chat support.",steps:["Create a Mistral Studio account.","Create a new API key.","Paste the key into HOLLOW.","Choose a Mistral model and connect."]},
+{id:"deepseek",name:"DeepSeek",icon:"DS",kind:"openai",tags:["paid"],price:"Usage based",base:"https://api.deepseek.com",model:"deepseek-flash",docs:"https://api-docs.deepseek.com/",desc:"OpenAI-compatible DeepSeek API.",steps:["Create a DeepSeek API key.","Paste it into HOLLOW.","Keep https://api.deepseek.com as the base.","Choose a current DeepSeek model and connect."]},
+{id:"xai",name:"xAI",icon:"x",kind:"openai",tags:["paid"],price:"Paid API",base:"https://api.x.ai/v1",model:"grok-4.7",docs:"https://docs.x.ai/developers/quickstart",desc:"Grok models through xAI's OpenAI-compatible API.",steps:["Create an xAI account and API key.","Add credits if your account requires them.","Paste the key into HOLLOW.","Choose a Grok model and connect."]},
+{id:"together",name:"Together AI",icon:"TO",kind:"openai",tags:["free","paid"],price:"Credits + paid",base:"https://api.together.xyz/v1",model:"meta-llama/Llama-3.3-70B-Instruct-Turbo",docs:"https://docs.together.ai/docs/quickstart",desc:"Large hosted open-model catalog.",steps:["Create a Together account/API key.","Paste the key into HOLLOW.","Use the Together /v1 base URL.","Choose an exact model ID and connect."]},
+{id:"fireworks",name:"Fireworks AI",icon:"FW",kind:"openai",tags:["free","paid"],price:"Credits + paid",base:"https://api.fireworks.ai/inference/v1",model:"accounts/fireworks/models/llama-v3p1-8b-instruct",docs:"https://docs.fireworks.ai/getting-started/quickstart",desc:"Fast hosted models with OpenAI-compatible inference.",steps:["Create a Fireworks account/API key.","Paste it into HOLLOW.","Use the inference /v1 base URL.","Choose a Fireworks model ID and connect."]},
+{id:"cerebras",name:"Cerebras",icon:"CB",kind:"openai",tags:["free","paid"],price:"Free tier + paid",base:"https://api.cerebras.ai/v1",model:"llama-3.3-70b",docs:"https://inference-docs.cerebras.ai/",desc:"Fast inference using an OpenAI-compatible API.",steps:["Create a Cerebras inference API key.","Paste it into HOLLOW.","Use the Cerebras /v1 base URL.","Choose an available model and connect."]},
+{id:"perplexity",name:"Perplexity",icon:"PX",kind:"openai",tags:["paid"],price:"Paid API",base:"https://api.perplexity.ai",model:"sonar",docs:"https://docs.perplexity.ai/",desc:"Search-grounded Sonar API for research study sessions.",steps:["Create a Perplexity API key.","Paste it into HOLLOW.","Use the official API base URL.","Choose a Sonar model and connect."]},
+{id:"nvidia",name:"NVIDIA NIM",icon:"NV",kind:"openai",tags:["free","paid"],price:"Developer + paid",base:"https://integrate.api.nvidia.com/v1",model:"meta/llama-3.3-70b-instruct",docs:"https://docs.api.nvidia.com/nim/reference/llm-apis",desc:"NVIDIA-hosted model APIs.",steps:["Create NVIDIA API credentials.","Paste the API key into HOLLOW.","Use NVIDIA's /v1 endpoint.","Choose a model ID from the catalog."]},
+{id:"huggingface",name:"Hugging Face Router",icon:"HF",kind:"openai",tags:["free","paid","gateway"],price:"Free allowance + paid",base:"https://router.huggingface.co/v1",model:"openai/gpt-oss-20b",docs:"https://huggingface.co/docs/inference-providers/index",desc:"Inference Providers router for many hosted models.",steps:["Create a Hugging Face token with needed permissions.","Paste the token into HOLLOW.","Use the router /v1 base URL.","Choose a supported model/provider route."]},
+{id:"cloudflare",name:"Cloudflare AI Gateway",icon:"CF",kind:"openai",tags:["free","paid","gateway"],price:"Free allowances + paid",base:"",model:"openai/gpt-5.5",docs:"https://developers.cloudflare.com/ai-gateway/",desc:"Unified gateway for Workers AI and supported third-party providers.",steps:["Create/use a Cloudflare AI Gateway.","Create an API token and note your Account ID.","Copy the gateway's OpenAI-compatible endpoint into Base URL.","Choose a provider/model identifier and connect."]},
+{id:"workersai",name:"Cloudflare Workers AI",icon:"WA",kind:"openai",tags:["free","paid"],price:"Free allocation + paid",base:"",model:"@cf/meta/llama-3.1-8b-instruct",docs:"https://developers.cloudflare.com/workers-ai/get-started/rest-api/",desc:"Cloudflare-hosted models. Endpoint contains your account ID.",steps:["Open Workers AI in Cloudflare.","Create a Workers AI API token and copy your Account ID.","Paste the OpenAI-compatible Workers AI endpoint into Base URL.","Choose an @cf/... model and connect."]},
+{id:"github",name:"GitHub Models",icon:"GH",kind:"openai",tags:["free","paid","gateway"],price:"Limited free + paid",base:"https://models.github.ai/inference",model:"openai/gpt-4.1",docs:"https://docs.github.com/en/github-models",desc:"Try supported models through GitHub Models.",steps:["Open GitHub Models and verify access.","Create/use the required GitHub token.","Enter the endpoint/model shown in GitHub documentation.","Connect and test."]},
+{id:"sambanova",name:"SambaNova Cloud",icon:"SN",kind:"openai",tags:["free","paid"],price:"Free tier + paid",base:"https://api.sambanova.ai/v1",model:"Meta-Llama-3.3-70B-Instruct",docs:"https://docs.sambanova.ai/cloud/docs/get-started/quickstart",desc:"Fast hosted inference with OpenAI-compatible APIs.",steps:["Create a SambaNova Cloud account/key.","Paste it into HOLLOW.","Use the SambaNova /v1 URL.","Choose a supported model."]},
+{id:"custom",name:"Custom OpenAI-Compatible",icon:"+",kind:"openai",tags:["local","free","paid","gateway"],price:"Anything",base:"",model:"",docs:"",desc:"Connect any OpenAI-style provider, proxy, school gateway, or self-hosted server.",steps:["Find the provider's OpenAI-compatible Base URL.","Create/copy an API key if it requires one.","Enter the exact model ID.","Save. HOLLOW keeps the profile locally and encrypts the key when supported."]}
+];
+function activeConnection(){return savedConnections.find(x=>x.id===activeConnectionId)||null}
+function presetFor(c){return PROVIDER_PRESETS.find(p=>p.id===c?.presetId)||PROVIDER_PRESETS.find(p=>p.id==="custom")}
+function syncLegacy(){
+  const c=activeConnection();if(!c)return;
+  settings.provider=c.kind==="gemini"?"gemini":c.kind==="ollama"?"ollama":c.kind==="anthropic"?"anthropic":"openai";
+  settings.model=c.model||"";
+  if(c.kind==="ollama")settings.ollamaUrl=c.baseUrl;
+  if(c.kind==="openai"||c.kind==="anthropic")settings.openaiUrl=c.baseUrl;
+}
+function persistConnections(){
+  savedConnections=savedConnections.slice(0,300);
+  localStorage.setItem("hollow_connections",JSON.stringify(savedConnections));
+  localStorage.setItem("hollow_active_connection",activeConnectionId||"");
+  syncLegacy();persist();renderProvider();updateCapacity();
+}
+function providerName(){
+  if(settings.private)return "PRIVATE • LOCAL";
+  const c=activeConnection();
+  if(c)return (c.local?"LOCAL • ":"")+String(c.name||"AI").toUpperCase();
+  if(settings.provider==="ollama")return "LOCAL • OLLAMA";
+  if(settings.provider==="gemini")return "GEMINI";
+  if(settings.provider==="openai")return "CUSTOM API";
+  return "SETUP";
+}
+
+function renderProvider(){
+  $("#providerLabel").textContent=providerName();
+  $("#providerDot").classList.toggle("dim",!settings.provider);
+}
+function setView(id){
+  $$(".view").forEach(v=>v.classList.toggle("active",v.id===id));
+  $$(".navBtn[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===id));
+  if(id==="progressView")renderProgress();
+}
+$$(".navBtn[data-view]").forEach(b=>b.onclick=()=>setView(b.dataset.view));
+
+function renderSide(){
+  const entries=Object.entries(profile.topics||{}).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  $("#sideMastery").innerHTML=entries.map(([k,v])=>`<div class="masteryItem"><div class="masteryTop"><span>${escapeHtml(k)}</span><span>${Math.round(v)}%</span></div><div class="bar"><span style="width:${Math.max(4,v)}%"></span></div></div>`).join("") || `<div class="sub">No learning signals yet.</div>`;
+  $("#privacyTitle").textContent=settings.private?"PRIVATE SESSION":"LOCAL MEMORY ON";
+  $("#privacySub").textContent=settings.private?"No profile writes. Cloud blocked.":"Profile saves on this device.";
+  $("#privacyDot").classList.toggle("dim",false);
+}
+function renderProgress(){
+  const vals=Object.values(profile.topics||{});
+  const avg=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):0;
+  $("#avgMastery").textContent=avg+"%";
+  $("#signalCount").innerHTML=`${profile.signals||0} <small>signals</small>`;
+  $("#progressTopics").innerHTML=Object.entries(profile.topics||{}).map(([k,v])=>`<div class="masteryItem"><div class="masteryTop"><span>${escapeHtml(k)}</span><span>${Math.round(v)}%</span></div><div class="bar"><span style="width:${v}%"></span></div></div>`).join("");
+}
+
+function classifyTopic(text){
+  const t=text.toLowerCase();
+  const map=[
+    ["Algebra",/equation|algebra|variable|solve for|polynomial|factor/],
+    ["Geometry",/geometry|triangle|circle|angle|area|volume/],
+    ["Calculus",/derivative|integral|limit|calculus/],
+    ["Physics",/physics|force|velocity|acceleration|energy|momentum|electric/],
+    ["Chemistry",/chemistry|mole|atom|bond|reaction|acid|base/],
+    ["Biology",/biology|cell|photosynthesis|dna|genetic|organism/],
+    ["History",/history|war|empire|revolution|century/],
+    ["English",/english|grammar|essay|literature|poem|writing/],
+    ["Coding",/code|javascript|python|programming|algorithm|function/]
+  ];
+  return (map.find(x=>x[1].test(t))||["General"])[0];
+}
+function signal(delta){
+  if(!settings.adaptive || settings.private)return;
+  const old=profile.topics[currentTopic] ?? 50;
+  profile.topics[currentTopic]=Math.max(5,Math.min(98,old+delta));
+  profile.signals=(profile.signals||0)+1;
+  persist();renderSide();
+}
+$("#gotItBtn").onclick=()=>{signal(4);toast("Mastery signal saved locally ↑")};
+$("#stuckBtn").onclick=()=>{signal(-3);toast("HOLLOW will slow down and use smaller hints")};
+
+$$(".mode").forEach(m=>m.onclick=()=>{$$(".mode").forEach(x=>x.classList.remove("active"));m.classList.add("active");settings.mode=m.dataset.mode;persist();toast(m.dataset.mode+" mode")});
+
+function addMsg(role,text,meta){
+  $("#welcome")?.remove();
+  const el=document.createElement("div"); el.className="msg "+(role==="user"?"user":"");
+  el.innerHTML=`<div class="avatar">${role==="user"?"YOU":"H"}</div><div class="bubble"><div class="meta">${escapeHtml(meta|| (role==="user"?"STUDENT":"HOLLOW • "+now()))}</div>${fmt(text)}</div>`;
+  $("#chat").appendChild(el);$("#chat").scrollTop=$("#chat").scrollHeight; return el;
+}
+function addThinking(){
+  $("#welcome")?.remove();
+  const el=document.createElement("div"); el.className="msg";el.id="thinking";
+  el.innerHTML=`<div class="avatar">H</div><div class="bubble"><div class="meta">HOLLOW • THINKING</div><div class="thinking"><i></i><i></i><i></i></div></div>`;
+  $("#chat").appendChild(el);$("#chat").scrollTop=$("#chat").scrollHeight;
+}
+function guardOutput(text){
+  if(!settings.guard)return text;
+  const leak=/(?:final answer|the answer is|therefore[,:\s]+[a-z]\s*=|so[,:\s]+[a-z]\s*=|answer\s*[:=])\s*/i;
+  if(leak.test(text) && settings.mode!=="Teach"){
+    return "I have the result, but I’m not going to drop it on you yet. Let’s earn it together.\n\nWhat is the **next operation or idea** you think should be used? I’ll tell you immediately whether you’re on the right track.";
+  }
+  return text;
+}
+function systemPrompt(){
+  const mastery=Math.round(profile.topics[currentTopic]??50);
+  const who=profile.name||"the learner";
+  const companion=profile.companionName||"HOLLOW";
+  const adapt=profile.adaptation||{};
+  return `You are ${companion}, an elite adaptive study companion for ${who}. You are not a generic chatbot and you do not ramble.
+
+PERSONALITY: ${profile.personality||"Chill"}.
+LEARNING STYLE: ${profile.learningStyle||"Mixed"}.
+CHALLENGE PREFERENCE: ${profile.challenge||"Balanced"}.
+GOAL: ${profile.goal||"Become genuinely better at learning"}.
+FOCUS SUBJECTS: ${(profile.subjects||[]).join(", ")||"Anything the learner studies"}.
+CURRENT MODE: ${settings.mode}.
+CURRENT TOPIC: ${currentTopic}. ESTIMATED MASTERY: ${mastery}%.
+ADAPTIVE SIGNALS: simplify=${adapt.simplify||0}, examples=${adapt.examples||0}, challenge=${adapt.challenge||0}, patience=${adapt.patience||0}.
+
+YOUR TEACHING IDENTITY:
+- Be an exceptional tutor and study companion, not an answer machine.
+- Never dump the final answer to a homework/problem before the learner has meaningfully attempted the reasoning.
+- Know the full solution internally, then reveal only the smallest useful next step.
+- Ask one strong question at a time unless you are running a quiz.
+- Diagnose the exact misconception, not just whether an answer is wrong.
+- Use tiny worked examples that are DIFFERENT from the learner's exact problem when examples help.
+- Build durable understanding: retrieval, prediction, self-explanation, spaced recall, and quick checkpoints.
+- When the learner is confused, reduce the size of the step rather than repeating the same explanation.
+- When they are doing well, increase difficulty and make them explain why.
+- Occasionally connect today's idea to a prerequisite or future concept when it genuinely helps.
+- Remember the learner's stated preferences from this prompt and act consistently with them.
+- Keep replies compact and natural. Usually 2–6 short paragraphs. No fake hype, no filler, no repetitive praise.
+- Sound like a smart companion who knows the learner, not a teacher reading a script.
+
+STYLE ADAPTATION:
+${profile.learningStyle==="Examples"?"Lead with a tiny analogous example, then make the learner do the next step.":""}
+${profile.learningStyle==="Simple"?"Use plain language first, then introduce precise terminology only after the core idea clicks.":""}
+${profile.learningStyle==="Questions"?"Prefer guided questions and discovery over explanation dumps.":""}
+${profile.challenge==="Gentle"?"Use smaller steps, more reassurance, and easier checkpoints.":""}
+${profile.challenge==="Hard"?"Push for justification, transfer questions, and less hand-holding.":""}
+${profile.challenge==="Exam"?"Act like exam preparation: minimal hints, strict checking, retrieval-heavy practice.":""}
+${(adapt.simplify||0)>2?"The learner has repeatedly signaled they need simpler explanations. Reduce jargon and step size.":""}
+${(adapt.examples||0)>2?"The learner tends to benefit from examples. Use a short analogous example early.":""}
+${(adapt.patience||0)>2?"The learner has been getting stuck. Slow the pace and verify each prerequisite.":""}
+
+MODE RULES:
+${settings.mode==="Hint"?"Give only the smallest useful hint. Stop before the next major step.":""}
+${settings.mode==="Challenge"?"Probe for misconceptions and make the learner prove understanding with transfer questions.":""}
+${settings.mode==="Teach"?"Teach the concept from first principles, but still pause for learner participation before completing their exact task.":""}
+${settings.mode==="Socratic"?"Guide with focused questions and hints, allowing the learner to construct the solution.":""}
+
+If ${who} asks for 'just the answer', politely refuse in one sentence and immediately give the best next clue.`;
+}
+function noteContext(){
+  const n=$("#notes").value.trim();
+  return n?`\n\nLOCAL STUDY NOTES:\n${n.slice(0,12000)}`:"";
+}
+
+async function askAI(userText){
+  let c=activeConnection();
+  if(!c){
+    if(settings.provider==="ollama")c={id:"legacy-ollama",name:"Ollama",kind:"ollama",baseUrl:settings.ollamaUrl||"http://localhost:11434",model:settings.model||"qwen3:4b",local:true};
+    else if(settings.provider==="gemini")c={id:"legacy-gemini",name:"Gemini",kind:"gemini",model:settings.model||"gemini-3.6-flash",local:false};
+    else if(settings.provider==="openai")c={id:"legacy-openai",name:"Custom API",kind:"openai",baseUrl:settings.openaiUrl||"",model:settings.model||"",local:false};
+  }
+  if(!c)throw new Error("Choose an AI connection first.");
+  if(settings.private&&!c.local&&c.kind!=="ollama")throw new Error("Private Mode blocks cloud AI. Choose a LOCAL connection.");
+  const sys=systemPrompt()+noteContext();
+  const secret=await getSecret("connection:"+c.id);
+
+  if(c.kind==="gemini"){
+    const key=secret||await getSecret("gemini");if(!key)throw new Error("Gemini API key is missing.");
+    const body={systemInstruction:{parts:[{text:sys}]},contents:[...chatHistory.slice(-10).map(m=>({role:m.role==="assistant"?"model":"user",parts:[{text:m.text}]})),{role:"user",parts:[{text:userText}]}],generationConfig:{temperature:.55,maxOutputTokens:1200}};
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(c.model||"gemini-3.6-flash")}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify(body)});
+    const j=await r.json();if(!r.ok)throw new Error(j?.error?.message||"Gemini request failed");
+    return j?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||"No response.";
+  }
+  if(c.kind==="ollama"){
+    const url=(c.baseUrl||"http://localhost:11434").replace(/\/$/,""),messages=[{role:"system",content:sys},...chatHistory.slice(-10).map(m=>({role:m.role,content:m.text})),{role:"user",content:userText}];
+    const r=await fetch(url+"/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:c.model||"qwen3:4b",messages,stream:false,options:{temperature:.55}})});
+    const j=await r.json();if(!r.ok)throw new Error(j?.error||"Ollama request failed");return j?.message?.content||"No response.";
+  }
+  if(c.kind==="anthropic"){
+    if(!secret)throw new Error("Anthropic API key is missing.");
+    const url=(c.baseUrl||"https://api.anthropic.com").replace(/\/$/,""),messages=chatHistory.slice(-10).map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.text}));
+    messages.push({role:"user",content:userText});
+    const r=await fetch(url+"/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":secret,"anthropic-version":"2023-06-01"},body:JSON.stringify({model:c.model,max_tokens:1200,temperature:.55,system:sys,messages})});
+    const j=await r.json();if(!r.ok)throw new Error(j?.error?.message||"Anthropic request failed");return j?.content?.filter(x=>x.type==="text").map(x=>x.text).join("")||"No response.";
+  }
+  if(c.kind==="openai"){
+    const url=(c.baseUrl||"").replace(/\/$/,"");if(!url)throw new Error("Provider Base URL is missing.");
+    const messages=[{role:"system",content:sys},...chatHistory.slice(-10).map(m=>({role:m.role,content:m.text})),{role:"user",content:userText}];
+    const endpoint=/\/chat\/completions$/i.test(url)?url:url+"/chat/completions";
+    const r=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json",...(secret?{Authorization:"Bearer "+secret}:{})},body:JSON.stringify({model:c.model,messages,temperature:.55,max_tokens:1200})});
+    const j=await r.json();if(!r.ok)throw new Error(j?.error?.message||j?.message||"Provider request failed");return j?.choices?.[0]?.message?.content||j?.output_text||"No response.";
+  }
+  throw new Error("Unsupported provider adapter.");
+}
+async function send(){
+  const p=$("#prompt"),text=p.value.trim(); if(!text||busy)return;
+  currentTopic=classifyTopic(text); adaptFromText(text); p.value="";autoGrow();
+  addMsg("user",text);chatHistory.push({role:"user",text});busy=true;$("#send").disabled=true;addThinking();
+  try{
+    const raw=await askAI(text), out=guardOutput(raw);
+    $("#thinking")?.remove();addMsg("assistant",out);chatHistory.push({role:"assistant",text:out});
+    if(chatHistory.length>24)chatHistory=chatHistory.slice(-24);
+    signal(1);
+  }catch(e){
+    $("#thinking")?.remove();
+    addMsg("assistant",`I couldn't connect yet.\n\n${e.message}\n\nOpen **AI** at the top and check your provider/model settings.`, "HOLLOW • CONNECTION");
+  }finally{busy=false;$("#send").disabled=false;renderSide()}
+}
+$("#send").onclick=send;
+$("#prompt").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
+function autoGrow(){const p=$("#prompt");p.style.height="auto";p.style.height=Math.min(p.scrollHeight,130)+"px"}
+$("#prompt").oninput=autoGrow;
+$$(".quick button").forEach(b=>b.onclick=()=>{$("#prompt").value=b.dataset.prompt;autoGrow();$("#prompt").focus()});
+
+
+function adaptFromText(text){
+  if(!settings.adaptive || settings.private) return;
+  const t=text.toLowerCase(), a=profile.adaptation||(profile.adaptation={simplify:0,examples:0,challenge:0,patience:0});
+  if(/\b(simple|simpler|easier|eli5|dont understand|don't understand|confused|what does that mean)\b/.test(t)) a.simplify=Math.min(12,(a.simplify||0)+1);
+  if(/\b(example|show me|demonstrate|like what)\b/.test(t)) a.examples=Math.min(12,(a.examples||0)+1);
+  if(/\b(harder|challenge|too easy|test me|quiz me)\b/.test(t)) a.challenge=Math.min(12,(a.challenge||0)+1);
+  if(/\b(stuck|still dont|still don't|lost|again|i dont get|i don't get)\b/.test(t)) a.patience=Math.min(12,(a.patience||0)+1);
+  persist();
+}
+function personalizeWelcome(){
+  const w=$("#welcome"); if(!w || !profile.onboarded)return;
+  const name=profile.name?`, ${escapeHtml(profile.name)}`:"";
+  w.innerHTML=`<div class="eyebrow">${escapeHtml(profile.companionName||"HOLLOW")} • YOUR STUDY COMPANION</div>
+  <h2>Ready${name}?<br>Let's make something click.</h2>
+  <p>I’ll teach in a <b>${escapeHtml(profile.personality||"Chill")}</b> way, lean toward <b>${escapeHtml(profile.learningStyle||"Mixed")}</b> learning, and adapt as we go.</p>
+  <div class="quick">
+    <button data-prompt="Start a short adaptive study session. Ask me what subject I want to work on first.">Start a session</button>
+    <button data-prompt="Quiz me on one of my focus subjects and adapt the difficulty as I answer.">Quiz me</button>
+    <button data-prompt="Help me understand something I am stuck on. Use my preferred learning style.">I'm stuck</button>
+    <button data-prompt="Challenge my understanding and find the first gap in what I know.">Challenge me</button>
+  </div>`;
+  $$(".quick button").forEach(b=>b.onclick=()=>{$("#prompt").value=b.dataset.prompt;autoGrow();$("#prompt").focus()});
+}
+
+let obStep=0;
+const OB_TOTAL=8;
+function initOnboarding(){
+  const steps=$("#onSteps"); if(!steps)return;
+  steps.innerHTML=Array.from({length:OB_TOTAL},(_,i)=>`<div class="onStepDot" data-os="${i}"><span></span></div>`).join("");
+  const bindGroup=(id,key)=>{
+    $$("#"+id+" .choice").forEach(b=>b.onclick=()=>{
+      $$("#"+id+" .choice").forEach(x=>x.classList.remove("active"));b.classList.add("active");profile[key]=b.dataset.value;
+    });
+  };
+  bindGroup("personalityChoices","personality");bindGroup("styleChoices","learningStyle");bindGroup("challengeChoices","challenge");
+  $$("#subjectChoices .chip").forEach(b=>b.onclick=()=>b.classList.toggle("active"));
+  $("#obBack").onclick=()=>{if(obStep>0){obStep--;renderOnboarding()}};
+  $("#obNext").onclick=()=>{
+    if(obStep===0 && !$("#obName").value.trim())return toast("Tell me what to call you first");
+    if(obStep<OB_TOTAL-1){saveObStep();obStep++;renderOnboarding()}else finishOnboarding();
+  };
+  renderOnboarding();
+}
+function saveObStep(){
+  if(obStep===0)profile.name=$("#obName").value.trim();
+  if(obStep===1)profile.companionName=$("#obCompanion").value.trim()||"HOLLOW";
+  if(obStep===5)profile.subjects=$$("#subjectChoices .chip.active").map(x=>x.dataset.value);
+  if(obStep===6)profile.goal=$("#obGoal").value.trim();
+}
+function renderOnboarding(){
+  $$(".onQ").forEach(q=>q.classList.toggle("active",Number(q.dataset.step)===obStep));
+  $$(".onStepDot").forEach((d,i)=>{d.classList.toggle("done",i<obStep);d.classList.toggle("active",i===obStep)});
+  $("#obBack").style.display=obStep?"inline-flex":"none";
+  $("#obNext").textContent=obStep===OB_TOTAL-1?"Enter HOLLOW":"Next";
+  $("#onboardHint").textContent=obStep===OB_TOTAL-1?"Your local companion profile is ready.":`Step ${obStep+1} of ${OB_TOTAL}`;
+}
+function finishOnboarding(){
+  saveObStep();profile.onboarded=true;
+  for(const sub of profile.subjects||[]) if(profile.topics[sub]==null) profile.topics[sub]=50;
+  localStorage.setItem("hollow_profile",JSON.stringify(profile));
+  $("#onboarding").classList.remove("show");renderSide();renderProgress();personalizeWelcome();
+  toast(`${profile.companionName||"HOLLOW"} is ready, ${profile.name||"learner"}`);
+  if(!settings.provider)setTimeout(openSetup,350);
+}
+
+function updateCapacity(){
+  const n=savedConnections.length;
+  $("#connectionCapacity").textContent=`${n} / 300 CONNECTIONS`;
+  $("#capacityBar").style.width=Math.max(1,n/3)+"%";
+  $("#providerCatalogCount").textContent=`${PROVIDER_PRESETS.length} PRESETS • 300 SLOTS`;
+}
+function providerMatch(p){
+  const q=($("#providerSearch")?.value||"").trim().toLowerCase();
+  const blob=(p.name+" "+p.desc+" "+p.tags.join(" ")).toLowerCase();
+  return (!q||blob.includes(q))&&(providerFilter==="all"||p.tags.includes(providerFilter));
+}
+function renderProviderGrid(){
+  const list=PROVIDER_PRESETS.filter(providerMatch),g=$("#providerGrid");if(!g)return;
+  g.innerHTML=list.length?list.map(p=>`<article class="pCard ${p.id===selectedPresetId?"active":""}" data-preset="${p.id}">
+  <div class="pCardTop"><div class="pIcon">${escapeHtml(p.icon)}</div><div><h4>${escapeHtml(p.name)}</h4><div class="badges">${p.tags.slice(0,3).map(t=>`<span class="badge ${t}">${escapeHtml(t)}</span>`).join("")}</div></div></div><p>${escapeHtml(p.desc)}</p></article>`).join(""):`<div class="hubEmpty">No provider matches that search.</div>`;
+  $$(".pCard").forEach(x=>x.onclick=()=>{selectedPresetId=x.dataset.preset;renderProviderGrid();renderProviderDetail()});
+}
+function formFor(p){
+  const base=p.kind==="gemini"?"":`<div class="field"><label>Base URL</label><input id="hubBase" value="${escapeHtml(p.base||"")}" placeholder="https://…/v1"></div>`;
+  const key=p.kind==="ollama"?"":`<div class="field"><label>API key / token</label><input id="hubKey" type="password" placeholder="Paste key — never embedded in this HTML"></div>`;
+  return `<div class="connectForm">${base}<div class="field"><label>Model</label><input id="hubModel" value="${escapeHtml(p.model||"")}" placeholder="Exact model ID"></div>${key}<div class="field"><label>Connection name</label><input id="hubName" value="${escapeHtml(p.name)}" maxlength="50"></div><div class="row">${p.kind==="ollama"?"":`<div class="switch on" id="hubRemember"></div><span class="sub">Remember key encrypted locally</span>`}<div class="spacer"></div><button class="btn primary" id="hubConnect">Connect</button></div></div>`;
+}
+function renderConnections(){
+  const w=$("#savedConnectionsList");if(!w)return;
+  w.innerHTML=savedConnections.length?savedConnections.map(c=>`<div class="connectionRow ${c.id===activeConnectionId?"active":""}">
+  <div class="pIcon" style="width:28px;height:28px;border-radius:9px;font-size:9px">${escapeHtml(presetFor(c)?.icon||"AI")}</div><div class="grow"><b>${escapeHtml(c.name)}</b><small>${escapeHtml(c.model||c.kind)}</small></div><button class="microBtn useConn" data-id="${c.id}">${c.id===activeConnectionId?"ACTIVE":"USE"}</button><button class="microBtn delConn" data-id="${c.id}">×</button></div>`).join(""):`<div class="sub">No saved connections yet.</div>`;
+  $$(".useConn").forEach(b=>b.onclick=()=>{activeConnectionId=b.dataset.id;persistConnections();renderConnections();toast("Active AI changed")});
+  $$(".delConn").forEach(b=>b.onclick=()=>{const id=b.dataset.id;savedConnections=savedConnections.filter(x=>x.id!==id);if(activeConnectionId===id)activeConnectionId=savedConnections[0]?.id||"";persistConnections();renderConnections();toast("Connection removed")});
+}
+function renderProviderDetail(){
+  const p=PROVIDER_PRESETS.find(x=>x.id===selectedPresetId)||PROVIDER_PRESETS[0],d=$("#providerDetail");if(!d)return;
+  d.innerHTML=`<div class="pDetailHero"><div class="pIcon">${escapeHtml(p.icon)}</div><div><h3>${escapeHtml(p.name)}</h3><p>${escapeHtml(p.price)}</p></div></div><p class="sub" style="margin-top:12px">${escapeHtml(p.desc)}</p>
+  <div class="detailActions">${p.docs?`<a class="btn" href="${escapeHtml(p.docs)}" target="_blank" rel="noopener">Official docs ↗</a>`:""}<button class="btn" id="copyTutorial">Copy tutorial</button></div>
+  <div class="detailSection"><h4>Connect tutorial</h4><div class="tutorialSteps">${p.steps.map(x=>`<div class="tutorialStep">${escapeHtml(x)}</div>`).join("")}</div></div>
+  <div class="detailSection"><h4>Connection</h4>${formFor(p)}</div>
+  <div class="detailSection"><h4>Saved locally</h4><div class="savedConnections" id="savedConnectionsList"></div></div>`;
+  $("#copyTutorial").onclick=async()=>{try{await navigator.clipboard.writeText(`${p.name}\n\n${p.steps.map((x,i)=>`${i+1}. ${x}`).join("\n")}${p.docs?`\n\nDocs: ${p.docs}`:""}`);toast("Tutorial copied")}catch{toast("Clipboard unavailable")}};
+  $("#hubRemember")?.addEventListener("click",e=>e.currentTarget.classList.toggle("on"));
+  $("#hubConnect").onclick=()=>connectPreset(p);renderConnections();
+}
+async function connectPreset(p){
+  if(savedConnections.length>=300)return toast("300 saved connections reached");
+  const id="conn_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7),key=$("#hubKey")?.value.trim()||"";
+  const c={id,presetId:p.id,name:$("#hubName")?.value.trim()||p.name,kind:p.kind,baseUrl:$("#hubBase")?.value.trim()||p.base||"",model:$("#hubModel")?.value.trim()||p.model||"",local:p.tags.includes("local"),createdAt:Date.now()};
+  savedConnections.push(c);activeConnectionId=id;
+  if(key){const ok=await setSecret("connection:"+id,key,$("#hubRemember")?.classList.contains("on"));if(!ok)toast("Secure vault unavailable — key kept for this session")}
+  persistConnections();renderConnections();toast(`${c.name} connected`);
+}
+function openSetup(){
+  $("#setupModal").classList.add("show");selectedPresetId=activeConnection()?.presetId||selectedPresetId||"ollama";renderProviderGrid();renderProviderDetail();updateCapacity();
+}
+$("#setupBtn").onclick=openSetup;$("#openSetup2").onclick=openSetup;$("#closeSetup").onclick=()=>$("#setupModal").classList.remove("show");
+$("#providerSearch").addEventListener("input",renderProviderGrid);
+$$(".hubFilter").forEach(b=>b.onclick=()=>{$$(".hubFilter").forEach(x=>x.classList.remove("active"));b.classList.add("active");providerFilter=b.dataset.pfilter;renderProviderGrid()});
+$("#customProviderBtn").onclick=()=>{selectedPresetId="custom";providerFilter="all";$("#providerSearch").value="";$$(".hubFilter").forEach(x=>x.classList.toggle("active",x.dataset.pfilter==="all"));renderProviderGrid();renderProviderDetail()};
+
+function togglePrivate(){
+  if(!settings.private){
+    prePrivateProfile=JSON.parse(JSON.stringify(profile));
+    settings.private=true;document.body.classList.add("private");$("#privateBtn").classList.add("privateOn");
+    $("#privateBtn").textContent="PRIVATE • ON";$("#privacyCopy").textContent="Private Mode is active. Cloud AI is blocked, profile writes are paused, and this private chat will be cleared when you leave.";
+    toast("Private Mode: cloud blocked • memory paused");
+  }else{
+    settings.private=false;document.body.classList.remove("private");$("#privateBtn").classList.remove("privateOn");$("#privateBtn").textContent="PRIVATE";
+    if(prePrivateProfile)profile=prePrivateProfile;
+    prePrivateProfile=null;chatHistory=[];$("#chat").innerHTML=`<div class="welcome" id="welcome"><div class="eyebrow">Private session cleared</div><h2>Back to normal mode.</h2><p>Your pre-private learner profile has been restored.</p></div>`; personalizeWelcome();
+    $("#privacyCopy").textContent="Normal mode. Local learning data is saved on this device.";
+    toast("Private session cleared");
+  }
+  renderProvider();renderSide();
+}
+$("#privateBtn").onclick=togglePrivate;
+
+$("#learningSwitch").classList.toggle("on",settings.adaptive);
+$("#guardSwitch").classList.toggle("on",settings.guard);
+$("#learningSwitch").onclick=e=>{settings.adaptive=!settings.adaptive;e.currentTarget.classList.toggle("on",settings.adaptive);persist()};
+$("#guardSwitch").onclick=e=>{settings.guard=!settings.guard;e.currentTarget.classList.toggle("on",settings.guard);persist()};
+
+$("#notes").value=localStorage.getItem("hollow_notes")||"";
+$("#saveNotes").onclick=()=>{if(settings.private)return toast("Private Mode doesn't persist notes");localStorage.setItem("hollow_notes",$("#notes").value);toast("Notes saved locally")};
+function download(name,obj){
+  const b=new Blob([typeof obj==="string"?obj:JSON.stringify(obj,null,2)],{type:"application/json"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+$("#exportBtn").onclick=()=>download("hollow-learning-profile.json",profile);
+$("#downloadData").onclick=()=>download("hollow-data.json",{settings:{...settings,private:false},profile,notes:localStorage.getItem("hollow_notes")||""});
+$("#resetData").onclick=async()=>{if(!confirm("Reset HOLLOW local data and encrypted API vault?"))return;localStorage.removeItem("hollow_settings");localStorage.removeItem("hollow_profile");localStorage.removeItem("hollow_notes");await Vault.clear();location.reload()};
+$("#lockBtn").onclick=()=>$("#lockScreen").classList.add("show");$("#unlockBtn").onclick=()=>$("#lockScreen").classList.remove("show");
+
+document.addEventListener("mousemove",e=>{document.documentElement.style.setProperty("--mx",e.clientX+"px");document.documentElement.style.setProperty("--my",e.clientY+"px")});
+
+// Nova starfield — tiny, dependency-free canvas animation
+const canvas=$("#space"),ctx=canvas.getContext("2d");let stars=[],dpr=1;
+function resize(){dpr=Math.min(2,devicePixelRatio||1);canvas.width=innerWidth*dpr;canvas.height=innerHeight*dpr;canvas.style.width=innerWidth+"px";canvas.style.height=innerHeight+"px";ctx.setTransform(dpr,0,0,dpr,0,0);stars=Array.from({length:Math.min(170,Math.floor(innerWidth*innerHeight/7000))},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.2+.15,a:Math.random()*.45+.08,s:Math.random()*.12+.03}))}
+function draw(t){ctx.clearRect(0,0,innerWidth,innerHeight);for(const s of stars){s.y+=s.s;if(s.y>innerHeight+2){s.y=-2;s.x=Math.random()*innerWidth}const pulse=.65+.35*Math.sin(t*.001+s.x);ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${s.a*pulse})`;ctx.fill()}requestAnimationFrame(draw)}
+addEventListener("resize",resize);resize();requestAnimationFrame(draw);
+
+if(!savedConnections.length&&settings.provider){
+  const id="legacy_"+Date.now().toString(36);
+  if(settings.provider==="ollama")savedConnections.push({id,presetId:"ollama",name:"Ollama",kind:"ollama",baseUrl:settings.ollamaUrl||"http://localhost:11434",model:settings.model||"qwen3:4b",local:true,createdAt:Date.now()});
+  if(settings.provider==="gemini")savedConnections.push({id,presetId:"gemini",name:"Google Gemini",kind:"gemini",baseUrl:"",model:settings.model||"gemini-3.6-flash",local:false,createdAt:Date.now()});
+  if(settings.provider==="openai")savedConnections.push({id,presetId:"custom",name:"Custom API",kind:"openai",baseUrl:settings.openaiUrl||"",model:settings.model||"",local:false,createdAt:Date.now()});
+  activeConnectionId=savedConnections[0]?.id||"";
+  if(activeConnectionId)persistConnections();
+}
+
+renderProvider();renderSide();renderProgress();initOnboarding();personalizeWelcome();
+if(!profile.onboarded){
+  $("#obName").value=profile.name||"";
+  $("#obCompanion").value=profile.companionName||"HOLLOW";
+  $("#obGoal").value=profile.goal||"";
+  $("#onboarding").classList.add("show");
+}else if(!settings.provider)setTimeout(openSetup,480);
+})();
+</script>
+</body>
+</html>
